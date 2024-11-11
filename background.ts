@@ -1,53 +1,90 @@
+// Add these constants at the top of the file
+const MAX_CHUNK_SIZE = 12000 // Conservative limit for GPT-4's context window
+const OVERLAP_SIZE = 500 // Words to overlap between chunks for context continuity
+
+// Helper function to split text into chunks
+function splitIntoChunks(text: string): string[] {
+  const words = text.split(/\s+/)
+  const chunks: string[] = []
+
+  for (let i = 0; i < words.length; i += MAX_CHUNK_SIZE - OVERLAP_SIZE) {
+    const chunk = words.slice(i, i + MAX_CHUNK_SIZE).join(" ")
+    chunks.push(chunk)
+  }
+
+  return chunks
+}
+
 // Function to extract key points from text using OpenAI's API
 async function extractKeyPoints(text: string, apiKey: string): Promise<string> {
   try {
-    // Make API request to OpenAI chat completions endpoint
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          // System message to instruct the AI how to summarize
-          {
-            role: "system",
-            content:
-              "You are a highly efficient summarizer. Your goal is to provide extremely concise summaries that scale with input length. For short texts (under 100 words), give a 1-sentence summary. For medium texts (100-500 words), give 2-3 key points. For longer texts, never exceed 4-5 key points. Always prioritize the most impactful information. Be ruthlessly brief - shorter is better."
-          },
-          // User message containing the text to summarize
-          {
-            role: "user",
-            content: `Summarize this text as concisely as possible, scaling summary length to input length: \n\n${text}`
-          }
-        ],
-        temperature: 0.5, // Lower temperature for more focused responses
-        max_tokens: 250 // Reduced max tokens to encourage brevity
-      })
-    })
+    const chunks = splitIntoChunks(text)
 
-    const data = await response.json()
-
-    // Check if the API request was successful
-    if (!response.ok) {
-      throw new Error(data.error?.message || "API request failed")
+    // If text fits in one chunk, process normally
+    if (chunks.length === 1) {
+      return await processChunk(chunks[0], apiKey)
     }
 
-    // Validate response format
-    if (!data.choices?.[0]?.message?.content) {
-      throw new Error("Invalid API response format")
+    // For multiple chunks, process each and combine
+    const summaries = await Promise.all(
+      chunks.map((chunk) => processChunk(chunk, apiKey))
+    )
+
+    // If we had multiple chunks, summarize the summaries
+    if (summaries.length > 1) {
+      const combinedSummary = summaries.join("\n\n")
+      return await processChunk(
+        `Combine these summaries into one coherent summary:\n\n${combinedSummary}`,
+        apiKey
+      )
     }
 
-    return data.choices[0].message.content
+    return summaries[0]
   } catch (error) {
-    // Handle and rethrow errors with more context
     if (error instanceof Error) {
       throw new Error(`OpenAI API Error: ${error.message}`)
     }
     throw new Error("An unexpected error occurred")
   }
+}
+
+// Helper function to process individual chunks
+async function processChunk(text: string, apiKey: string): Promise<string> {
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are a highly efficient summarizer. Your goal is to provide extremely concise summaries that scale with input length. For short texts (under 100 words), give a 1-sentence summary. For medium texts (100-500 words), give 2-3 key points. For longer texts, never exceed 4-5 key points. Always prioritize the most impactful information. Be ruthlessly brief - shorter is better."
+        },
+        {
+          role: "user",
+          content: `Summarize this text as concisely as possible, scaling summary length to input length: \n\n${text}`
+        }
+      ],
+      temperature: 0.5,
+      max_tokens: 250
+    })
+  })
+
+  const data = await response.json()
+
+  if (!response.ok) {
+    throw new Error(data.error?.message || "API request failed")
+  }
+
+  if (!data.choices?.[0]?.message?.content) {
+    throw new Error("Invalid API response format")
+  }
+
+  return data.choices[0].message.content
 }
 
 // Add this helper function at the top of the file
