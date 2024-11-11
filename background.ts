@@ -15,16 +15,16 @@ async function extractKeyPoints(text: string, apiKey: string): Promise<string> {
           {
             role: "system",
             content:
-              "I'll show you some text, you summarize it / extract 1-2 key points. Focus on high-level, focus on high-impact. It's better to remove, than to keep it long. Try to keep your summaries as short as possible. Here it goes:"
+              "You are a highly efficient summarizer. Your goal is to provide extremely concise summaries that scale with input length. For short texts (under 100 words), give a 1-sentence summary. For medium texts (100-500 words), give 2-3 key points. For longer texts, never exceed 4-5 key points. Always prioritize the most impactful information. Be ruthlessly brief - shorter is better."
           },
           // User message containing the text to summarize
           {
             role: "user",
-            content: `Please summarize the following text into key points: \n\n${text}`
+            content: `Summarize this text as concisely as possible, scaling summary length to input length: \n\n${text}`
           }
         ],
-        temperature: 0.7, // Controls randomness of output
-        max_tokens: 500 // Maximum length of response
+        temperature: 0.5, // Lower temperature for more focused responses
+        max_tokens: 250 // Reduced max tokens to encourage brevity
       })
     })
 
