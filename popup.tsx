@@ -104,7 +104,7 @@ const SummaryDisplay = ({ isLoading, summary }) => {
           to { transform: rotate(360deg); }
         }
       `}</style>
-      <p style={{ marginTop: 8, marginBottom: 0 }}>Generating summary...</p>
+      <p style={{ marginTop: 0, marginBottom: 16 }}>Generating summary...</p>
     </div>
   )
 
