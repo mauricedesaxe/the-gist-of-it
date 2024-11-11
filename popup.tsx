@@ -96,7 +96,7 @@ function IndexPopup() {
           "Key Points" to summarize it.
         </p>
       </div>
-      <div style={{ padding: 16, minWidth: 220 }}>
+      <div style={{ padding: 16, minWidth: 420 }}>
         <div style={{ marginBottom: 16 }}>
           <label htmlFor="apiKey" style={{ display: "block", marginBottom: 8 }}>
             OpenAI API Key:
