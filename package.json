@@ -25,7 +25,8 @@
   },
   "manifest": {
     "host_permissions": [
-      "https://*/*"
+      "https://*/*",
+      "https://api.openai.com/*"
     ],
     "permissions": [
       "contextMenus",
