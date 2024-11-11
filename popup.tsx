@@ -122,7 +122,28 @@ const SummaryDisplay = ({ isLoading, summary }) => {
           borderRadius: 4,
           border: "1px solid #ddd"
         }}>
-        <h3 style={{ margin: "0 0 8px 0" }}>Summary</h3>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 16
+          }}>
+          <h3 style={{ margin: 0 }}>Summary</h3>
+          <button
+            onClick={() => {
+              chrome.storage.local.remove("currentSummary")
+            }}
+            style={{
+              padding: "4px 8px",
+              borderRadius: 4,
+              border: "1px solid #ccc",
+              backgroundColor: "#fff",
+              cursor: "pointer"
+            }}>
+            Clear Summary
+          </button>
+        </div>
         <p style={{ margin: 0, whiteSpace: "pre-wrap" }}>{summary}</p>
       </div>
     )
