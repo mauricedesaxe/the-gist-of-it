@@ -16,7 +16,9 @@ const OpenAIKeyConfig = ({ openAIKey, setOpenAIKey }) => {
 
   return (
     <>
-      <label htmlFor="apiKey" style={{ display: "block", marginBottom: 8 }}>
+      <label
+        htmlFor="apiKey"
+        style={{ display: "block", fontSize: 16, lineHeight: 1.5 }}>
         OpenAI API Key:
       </label>
       <div style={{ display: "flex", gap: 8 }}>
@@ -51,7 +53,6 @@ const OpenAIKeyConfig = ({ openAIKey, setOpenAIKey }) => {
       <button
         onClick={clearApiKey}
         style={{
-          marginTop: 8,
           padding: "4px 8px",
           borderRadius: 4,
           border: "1px solid #ccc",
@@ -67,7 +68,6 @@ const OpenAIKeyConfig = ({ openAIKey, setOpenAIKey }) => {
           color: "#856404",
           padding: 8,
           borderRadius: 4,
-          marginTop: 8,
           fontSize: 12
         }}>
         Note: Your API key is stored locally on your device. Never share your
@@ -81,7 +81,6 @@ const SummaryDisplay = ({ isLoading, summary }) => {
   const LoadingSpinner = () => (
     <div
       style={{
-        marginTop: 16,
         padding: 16,
         backgroundColor: "#f0f0f0",
         borderRadius: 4,
@@ -104,7 +103,7 @@ const SummaryDisplay = ({ isLoading, summary }) => {
           to { transform: rotate(360deg); }
         }
       `}</style>
-      <p style={{ marginTop: 0, marginBottom: 16 }}>Generating summary...</p>
+      <p>Generating summary...</p>
     </div>
   )
 
@@ -116,7 +115,6 @@ const SummaryDisplay = ({ isLoading, summary }) => {
     return (
       <div
         style={{
-          marginBottom: 16,
           padding: 16,
           backgroundColor: "#f0f0f0",
           borderRadius: 4,
@@ -126,10 +124,9 @@ const SummaryDisplay = ({ isLoading, summary }) => {
           style={{
             display: "flex",
             justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 16
+            alignItems: "center"
           }}>
-          <h3 style={{ margin: 0 }}>Summary</h3>
+          <h3>Summary</h3>
           <button
             onClick={() => {
               chrome.storage.local.remove("currentSummary")
@@ -144,7 +141,9 @@ const SummaryDisplay = ({ isLoading, summary }) => {
             Clear Summary
           </button>
         </div>
-        <p style={{ margin: 0, whiteSpace: "pre-wrap" }}>{summary}</p>
+        <p style={{ whiteSpace: "pre-wrap", fontSize: 16, lineHeight: 1.5 }}>
+          {summary}
+        </p>
       </div>
     )
   }
@@ -197,7 +196,9 @@ function IndexPopup() {
         style={{
           backgroundColor: "#f9f9f9",
           padding: 16,
-          borderRadius: 4
+          borderRadius: 4,
+          fontSize: 18,
+          lineHeight: 1.5
         }}>
         <h2>The Gist of It</h2>
         <p>
@@ -206,7 +207,7 @@ function IndexPopup() {
         </p>
       </div>
       <div style={{ padding: 16, minWidth: 420 }}>
-        <div style={{ marginBottom: 16 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <SummaryDisplay isLoading={isLoading} summary={summary} />
           <OpenAIKeyConfig openAIKey={openAIKey} setOpenAIKey={setOpenAIKey} />
         </div>
