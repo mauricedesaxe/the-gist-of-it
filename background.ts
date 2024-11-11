@@ -93,16 +93,17 @@ chrome.runtime.onInstalled.addListener(() => {
 
 // Handle clicks on the context menu
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
-  console.log("Context menu clicked", info, tab)
   if (
     info.menuItemId === "extract-key-points-selection" &&
     info.selectionText &&
     tab.id
   ) {
     try {
-      const result = await chrome.storage.local.get("openAIKey")
-      console.log("Got API key", !!result.openAIKey)
+      // Set loading state and open popup immediately
+      await chrome.storage.local.set({ isLoading: true })
+      await openPopup()
 
+      const result = await chrome.storage.local.get("openAIKey")
       if (!result.openAIKey) {
         throw new Error(
           "Please enter your OpenAI API key in the extension popup"
@@ -113,18 +114,19 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
         info.selectionText,
         result.openAIKey
       )
-      console.log("Got summary", summary)
 
-      // Store summary and open popup
-      await chrome.storage.local.set({ currentSummary: summary })
-      await openPopup()
+      // Update storage with summary and clear loading state
+      await chrome.storage.local.set({
+        currentSummary: summary,
+        isLoading: false
+      })
     } catch (error) {
       console.error("Error generating summary:", error)
-      // Store error in storage instead of sending message
+      // Store error and clear loading state
       await chrome.storage.local.set({
-        currentSummary: `Error: ${error.message}`
+        currentSummary: `Error: ${error.message}`,
+        isLoading: false
       })
-      await openPopup()
     }
   }
 })

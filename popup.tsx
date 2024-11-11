@@ -4,22 +4,32 @@ function IndexPopup() {
   const [openAIKey, setOpenAIKey] = useState("")
   const [isVisible, setIsVisible] = useState(false)
   const [summary, setSummary] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
-    // Load saved API key on mount
-    chrome.storage.local.get(["openAIKey", "currentSummary"], (result) => {
-      if (result.openAIKey) {
-        setOpenAIKey(result.openAIKey)
+    // Load saved API key and states on mount
+    chrome.storage.local.get(
+      ["openAIKey", "currentSummary", "isLoading"],
+      (result) => {
+        if (result.openAIKey) {
+          setOpenAIKey(result.openAIKey)
+        }
+        if (result.currentSummary) {
+          setSummary(result.currentSummary)
+        }
+        setIsLoading(!!result.isLoading)
       }
-      if (result.currentSummary) {
-        setSummary(result.currentSummary)
-      }
-    })
+    )
 
     // Listen for storage changes
     const handleStorageChange = (changes, namespace) => {
-      if (namespace === "local" && changes.currentSummary) {
-        setSummary(changes.currentSummary.newValue)
+      if (namespace === "local") {
+        if (changes.currentSummary) {
+          setSummary(changes.currentSummary.newValue)
+        }
+        if (changes.isLoading) {
+          setIsLoading(changes.isLoading.newValue)
+        }
       }
     }
 
@@ -40,6 +50,37 @@ function IndexPopup() {
     setOpenAIKey("")
     chrome.storage.local.remove("openAIKey")
   }
+
+  // Add loading spinner component between the API key input and summary
+  const LoadingSpinner = () => (
+    <div
+      style={{
+        marginTop: 16,
+        padding: 16,
+        backgroundColor: "#f0f0f0",
+        borderRadius: 4,
+        border: "1px solid #ddd",
+        textAlign: "center"
+      }}>
+      <div
+        style={{
+          display: "inline-block",
+          width: 20,
+          height: 20,
+          border: "2px solid #ccc",
+          borderTopColor: "#333",
+          borderRadius: "50%",
+          animation: "spin 1s linear infinite"
+        }}
+      />
+      <style>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
+      <p style={{ marginTop: 8, marginBottom: 0 }}>Generating summary...</p>
+    </div>
+  )
 
   return (
     <>
@@ -101,7 +142,9 @@ function IndexPopup() {
             }}>
             Clear API Key
           </button>
-          {summary && (
+          {isLoading ? (
+            <LoadingSpinner />
+          ) : summary ? (
             <div
               style={{
                 marginTop: 16,
@@ -113,7 +156,7 @@ function IndexPopup() {
               <h3 style={{ margin: "0 0 8px 0" }}>Summary</h3>
               <p style={{ margin: 0, whiteSpace: "pre-wrap" }}>{summary}</p>
             </div>
-          )}
+          ) : null}
           <div
             className="warning"
             style={{
