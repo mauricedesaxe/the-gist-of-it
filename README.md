@@ -1,8 +1,46 @@
-This is a [Plasmo extension](https://docs.plasmo.com/) project bootstrapped with [`plasmo init`](https://www.npmjs.com/package/plasmo).
+# The Gist of It - AI-Powered Text Summarization
+
+This Chrome extension uses GPT to provide instant, intelligent summaries of any selected text. Built with [Plasmo](https://docs.plasmo.com/) and powered by OpenAI's GPT models.
+
+## Features
+
+### Current
+- One-click text summarization from any selected text
+- Automatic length adjustment based on input text
+- Secure local API key storage
+- Support for large text chunks with smart splitting
+
+### "Planned" Features
+
+I don't like to commit to long-term plans, but here are some ideas I'm currently kicking around.
+Do not expect these to be implemented anytime soon or ever.
+Simply brainstorming out loud.
+
+#### Multi-Modal Summaries
+- YouTube video transcript summarization
+- PDF document summarization
+
+#### Research Assistant Mode
+- Key quote extraction
+
+#### Knowledge Base Features
+- Topic-based summary organization
+- Tagging and categorization
+- Summary hybrid (keyword and vector) search functionality
+- Summary export as markdown
 
 ## Getting Started
 
-First, run the development server:
+1. Clone the repository
+2. Install dependencies:
+
+```bash
+pnpm install
+# or
+npm install
+```
+
+3. Run the development server:
 
 ```bash
 pnpm dev
