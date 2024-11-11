@@ -203,7 +203,7 @@ function IndexPopup() {
         <h2>The Gist of It</h2>
         <p>
           Put your OpenAI API key below, then right click on any text and use
-          "Key Points" to summarize it.
+          "Get the Gist of It" to summarize it.
         </p>
       </div>
       <div style={{ padding: 16, minWidth: 420 }}>

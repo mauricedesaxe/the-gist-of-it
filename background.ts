@@ -73,7 +73,7 @@ chrome.runtime.onInstalled.addListener(() => {
     chrome.contextMenus.create(
       {
         id: "extract-key-points-selection",
-        title: "Extract Key Points",
+        title: "Get the Gist of It",
         contexts: ["selection"] // Only show menu on text selection
       },
       () => {
