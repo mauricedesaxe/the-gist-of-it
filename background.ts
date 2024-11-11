@@ -31,7 +31,9 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     chrome.scripting.executeScript({
       target: { tabId: tab.id },
       func: (text) => {
-        console.log(text)
+        chrome.storage.local.get("openAIKey", (result) => {
+          console.log(text, result.openAIKey)
+        })
       },
       args: [info.selectionText]
     })
