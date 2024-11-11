@@ -142,6 +142,19 @@ function IndexPopup() {
             }}>
             Clear API Key
           </button>
+          <div
+            className="warning"
+            style={{
+              backgroundColor: "#fff3cd",
+              color: "#856404",
+              padding: 8,
+              borderRadius: 4,
+              marginTop: 8,
+              fontSize: 12
+            }}>
+            Note: Your API key is stored locally on your device. Never share
+            your API key with others.
+          </div>
           {isLoading ? (
             <LoadingSpinner />
           ) : summary ? (
@@ -157,19 +170,6 @@ function IndexPopup() {
               <p style={{ margin: 0, whiteSpace: "pre-wrap" }}>{summary}</p>
             </div>
           ) : null}
-          <div
-            className="warning"
-            style={{
-              backgroundColor: "#fff3cd",
-              color: "#856404",
-              padding: 8,
-              borderRadius: 4,
-              marginTop: 8,
-              fontSize: 12
-            }}>
-            Note: Your API key is stored locally on your device. Never share
-            your API key with others.
-          </div>
         </div>
       </div>
     </>
