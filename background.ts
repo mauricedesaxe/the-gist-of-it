@@ -50,6 +50,20 @@ async function extractKeyPoints(text: string, apiKey: string): Promise<string> {
   }
 }
 
+// Add this helper function at the top of the file
+async function openPopup() {
+  // Get the current window
+  const window = await chrome.windows.getCurrent()
+
+  // Get all tabs in the current window
+  const tabs = await chrome.tabs.query({ active: true, windowId: window.id })
+
+  if (tabs[0]) {
+    // Show the extension's popup
+    await chrome.action.openPopup()
+  }
+}
+
 // Set up context menu when extension is installed or updated
 chrome.runtime.onInstalled.addListener(() => {
   console.log("Extension installed/updated")
@@ -79,41 +93,38 @@ chrome.runtime.onInstalled.addListener(() => {
 
 // Handle clicks on the context menu
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
-  // Only proceed if it's our menu item, has selected text, and a valid tab
+  console.log("Context menu clicked", info, tab)
   if (
     info.menuItemId === "extract-key-points-selection" &&
     info.selectionText &&
     tab.id
   ) {
     try {
-      // Get OpenAI API key from storage
       const result = await chrome.storage.local.get("openAIKey")
-      // Generate summary from selected text
+      console.log("Got API key", !!result.openAIKey)
+
+      if (!result.openAIKey) {
+        throw new Error(
+          "Please enter your OpenAI API key in the extension popup"
+        )
+      }
+
       const summary = await extractKeyPoints(
         info.selectionText,
         result.openAIKey
       )
+      console.log("Got summary", summary)
 
-      // Show summary in an alert in the active tab
-      await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        func: (summaryText) => {
-          alert(summaryText)
-        },
-        args: [summary]
-      })
+      // Store summary and open popup
+      await chrome.storage.local.set({ currentSummary: summary })
+      await openPopup()
     } catch (error) {
       console.error("Error generating summary:", error)
-      // Show error message in an alert if something goes wrong
-      if (tab.id) {
-        await chrome.scripting.executeScript({
-          target: { tabId: tab.id },
-          func: (errorMsg) => {
-            alert(`Error: ${errorMsg}`)
-          },
-          args: [error.message]
-        })
-      }
+      // Store error in storage instead of sending message
+      await chrome.storage.local.set({
+        currentSummary: `Error: ${error.message}`
+      })
+      await openPopup()
     }
   }
 })
@@ -121,29 +132,28 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
 // Handle messages from other parts of the extension
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === "SUMMARIZE_TEXT") {
-    // Handle the message asynchronously using an IIFE
     ;(async () => {
       try {
-        // Get API key and generate summary
         const result = await chrome.storage.local.get("openAIKey")
         const summary = await extractKeyPoints(message.text, result.openAIKey)
 
-        // Show summary in an alert if we have a valid tab
-        if (sender.tab?.id) {
-          await chrome.scripting.executeScript({
-            target: { tabId: sender.tab.id },
-            func: (summaryText) => {
-              alert(summaryText)
-            },
-            args: [summary]
-          })
-        }
+        // Send summary to popup
+        chrome.runtime.sendMessage({
+          type: "UPDATE_SUMMARY",
+          summary
+        })
+
         sendResponse({ success: true, summary })
       } catch (error) {
         console.error("Error generating summary:", error)
+        // Store error in storage instead of sending message
+        await chrome.storage.local.set({
+          currentSummary: `Error: ${error.message}`
+        })
+        await openPopup()
         sendResponse({ success: false, error: error.message })
       }
     })()
-    return true // Keep the message channel open for async response
+    return true
   }
 })

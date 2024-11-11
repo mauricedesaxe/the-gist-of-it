@@ -31,7 +31,9 @@
     "permissions": [
       "contextMenus",
       "scripting",
-      "storage"
+      "storage",
+      "tabs",
+      "action"
     ],
     "background": {
       "service_worker": "background.ts"

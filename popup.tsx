@@ -3,14 +3,31 @@ import { useEffect, useState } from "react"
 function IndexPopup() {
   const [openAIKey, setOpenAIKey] = useState("")
   const [isVisible, setIsVisible] = useState(false)
+  const [summary, setSummary] = useState("")
 
   useEffect(() => {
     // Load saved API key on mount
-    chrome.storage.local.get(["openAIKey"], (result) => {
+    chrome.storage.local.get(["openAIKey", "currentSummary"], (result) => {
       if (result.openAIKey) {
         setOpenAIKey(result.openAIKey)
       }
+      if (result.currentSummary) {
+        setSummary(result.currentSummary)
+      }
     })
+
+    // Listen for storage changes
+    const handleStorageChange = (changes, namespace) => {
+      if (namespace === "local" && changes.currentSummary) {
+        setSummary(changes.currentSummary.newValue)
+      }
+    }
+
+    chrome.storage.onChanged.addListener(handleStorageChange)
+
+    return () => {
+      chrome.storage.onChanged.removeListener(handleStorageChange)
+    }
   }, [])
 
   const handleKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -84,6 +101,19 @@ function IndexPopup() {
             }}>
             Clear API Key
           </button>
+          {summary && (
+            <div
+              style={{
+                marginTop: 16,
+                padding: 16,
+                backgroundColor: "#f0f0f0",
+                borderRadius: 4,
+                border: "1px solid #ddd"
+              }}>
+              <h3 style={{ margin: "0 0 8px 0" }}>Summary</h3>
+              <p style={{ margin: 0, whiteSpace: "pre-wrap" }}>{summary}</p>
+            </div>
+          )}
           <div
             className="warning"
             style={{
