@@ -116,7 +116,7 @@ const SummaryDisplay = ({ isLoading, summary }) => {
     return (
       <div
         style={{
-          marginTop: 16,
+          marginBottom: 16,
           padding: 16,
           backgroundColor: "#f0f0f0",
           borderRadius: 4,
@@ -186,8 +186,8 @@ function IndexPopup() {
       </div>
       <div style={{ padding: 16, minWidth: 420 }}>
         <div style={{ marginBottom: 16 }}>
-          <OpenAIKeyConfig openAIKey={openAIKey} setOpenAIKey={setOpenAIKey} />
           <SummaryDisplay isLoading={isLoading} summary={summary} />
+          <OpenAIKeyConfig openAIKey={openAIKey} setOpenAIKey={setOpenAIKey} />
         </div>
       </div>
     </>
