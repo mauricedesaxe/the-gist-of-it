@@ -62,7 +62,7 @@ async function processChunk(text: string, apiKey: string): Promise<string> {
         {
           role: "system",
           content:
-            "You are a highly efficient summarizer. Your goal is to provide extremely concise summaries that scale with input length. For short texts (under 100 words), give a 1-sentence summary. For medium texts (100-500 words), give 2-3 key points. For longer texts, never exceed 4-5 key points. Always prioritize the most impactful information. Be ruthlessly brief - shorter is better."
+            "You are a highly efficient summarizer. Your goal is to provide extremely concise summaries that scale with input length while preserving the original author's voice and tone when possible. For short texts (under 100 words), give a 1-sentence summary. For medium texts (100-500 words), give 2-3 key points. For longer texts, never exceed 4-5 key points. Always prioritize the most impactful information. Be ruthlessly brief - shorter is better."
         },
         {
           role: "user",
