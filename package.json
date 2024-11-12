@@ -29,9 +29,7 @@
     ],
     "permissions": [
       "contextMenus",
-      "scripting",
       "storage",
-      "tabs",
       "action"
     ],
     "background": {
