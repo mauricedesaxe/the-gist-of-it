@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react"
 
+// @ts-ignore
+import icon from "~assets/icon.png"
+
 const OpenAIKeyConfig = ({ openAIKey, setOpenAIKey }) => {
   const [isVisible, setIsVisible] = useState(false)
 
@@ -200,7 +203,16 @@ function IndexPopup() {
           fontSize: 18,
           lineHeight: 1.5
         }}>
-        <h2>The Gist of It</h2>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <img
+            src={icon}
+            alt="The Gist of It"
+            width={32}
+            height={32}
+            style={{ borderRadius: 4 }}
+          />
+          <h2>The Gist of It</h2>
+        </div>
         <p>
           Put your OpenAI API key below, then right click on any text and use
           "Get the Gist of It" to summarize it.
