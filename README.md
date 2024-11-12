@@ -16,6 +16,9 @@ I don't like to commit to long-term plans, but here are some ideas I'm currently
 Do not expect these to be implemented anytime soon or ever.
 Simply brainstorming out loud.
 
+#### URL-based Summarization
+- Right-click on a link and select "Summarize this page", ingests the page as markdown and summarizes it.
+
 #### Multi-Modal Summaries
 - YouTube video transcript summarization
 - PDF document summarization
