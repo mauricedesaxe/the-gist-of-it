@@ -35,5 +35,6 @@
     "background": {
       "service_worker": "background.ts"
     }
-  }
+  },
+  "license": "MIT"
 }
