@@ -48,11 +48,8 @@ async function extractKeyPoints(text: string, apiKey: string): Promise<string> {
   }
 }
 
-// Helper function to process individual chunks
-async function processChunk(text: string, apiKey: string): Promise<string> {
-  const wordCount = text.split(/\s+/).length
-
-  // Define system prompts based on text length
+// Helper function to get system prompt based on word count
+function getSystemPrompt(wordCount: number): string {
   let systemPrompt = ""
   if (wordCount > 500) {
     systemPrompt =
@@ -96,6 +93,15 @@ async function processChunk(text: string, apiKey: string): Promise<string> {
     "- Use original terminology when domain-specific\n" +
     "- Exclude redundant or obvious information\n" +
     "- Never add information not present in original text"
+
+  return systemPrompt
+}
+
+// Helper function to process individual chunks
+async function processChunk(text: string, apiKey: string): Promise<string> {
+  const wordCount = text.split(/\s+/).length
+
+  const systemPrompt = getSystemPrompt(wordCount)
 
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
