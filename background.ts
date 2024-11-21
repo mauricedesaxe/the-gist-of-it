@@ -50,6 +50,53 @@ async function extractKeyPoints(text: string, apiKey: string): Promise<string> {
 
 // Helper function to process individual chunks
 async function processChunk(text: string, apiKey: string): Promise<string> {
+  const wordCount = text.split(/\s+/).length
+
+  // Define system prompts based on text length
+  let systemPrompt = ""
+  if (wordCount > 500) {
+    systemPrompt =
+      "You are an expert summarizer specializing in long-form content analysis. " +
+      "Create a comprehensive yet concise summary with key points and a 3-4 sentence overview.\n\n" +
+      "OUTPUT FORMAT:\n" +
+      "```\n" +
+      "KEY POINTS:\n" +
+      "• [key point 1]\n" +
+      "• [key point 2]\n" +
+      "...\n" +
+      "<summary>[3-4 sentence summary here]</summary>\n" +
+      "```"
+  } else if (wordCount >= 100) {
+    systemPrompt =
+      "You are an expert summarizer specializing in medium-length content. " +
+      "Extract the main points while maintaining the original tone and terminology.\n\n" +
+      "OUTPUT FORMAT:\n" +
+      "```\n" +
+      "<summary>\n" +
+      "• [key point 1]\n" +
+      "• [key point 2]\n" +
+      "</summary>\n" +
+      "```"
+  } else {
+    systemPrompt =
+      "You are an expert summarizer specializing in concise content. " +
+      "Distill the essence into a single clear sentence.\n\n" +
+      "OUTPUT FORMAT:\n" +
+      "```\n" +
+      "<summary>[single sentence summary]</summary>\n" +
+      "```"
+  }
+
+  // Add common guidelines to all prompts
+  systemPrompt +=
+    "\n\nGUIDELINES:\n" +
+    "- Focus on actionable insights and key takeaways\n" +
+    "- Maintain original tone (formal/casual/technical)\n" +
+    "- Preserve important technical details and numbers\n" +
+    "- Use original terminology when domain-specific\n" +
+    "- Exclude redundant or obvious information\n" +
+    "- Never add information not present in original text"
+
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -61,49 +108,16 @@ async function processChunk(text: string, apiKey: string): Promise<string> {
       messages: [
         {
           role: "system",
-          content:
-            "You are an expert summarizer with years of experience in content analysis and technical writing. " +
-            "Your summaries are known for being clear, concise, and capturing the essence of the text while maintaining accuracy.\n\n" +
-            "OUTPUT RULES:\n" +
-            "1. For texts > 500 words:\n" +
-            "```\n" +
-            "KEY POINTS:\n" +
-            "• [key point 1]\n" +
-            "• [key point 2]\n" +
-            "...\n" +
-            "<summary>[3-4 sentence summary here]</summary>\n" +
-            "```\n\n" +
-            "2. For texts 100-500 words:\n" +
-            "```\n" +
-            "<summary>\n" +
-            "• [key point 1]\n" +
-            "• [key point 2]\n" +
-            "</summary>\n" +
-            "```\n\n" +
-            "3. For texts < 100 words:\n" +
-            "```\n" +
-            "<summary>[single sentence summary]</summary>\n" +
-            "```\n\n" +
-            "GUIDELINES:\n" +
-            "- Focus on actionable insights and key takeaways\n" +
-            "- Maintain original tone (formal/casual/technical)\n" +
-            "- Preserve important technical details and numbers\n" +
-            "- Use original terminology when domain-specific\n" +
-            "- Exclude redundant or obvious information\n" +
-            "- Never add information not present in original text"
+          content: systemPrompt
         },
         {
           role: "user",
-          content:
-            "Here's the text to analyze. Word count: " +
-            text.split(/\s+/).length +
-            "\n\n" +
-            text
+          content: "Here's the text to analyze:\n\n" + text
         }
       ],
       temperature: 0.2,
       max_tokens: 350,
-      presence_penalty: -0.2, // Slight penalty to prevent adding information
+      presence_penalty: -0.2,
       frequency_penalty: 0.3
     })
   })
