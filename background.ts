@@ -62,14 +62,22 @@ async function processChunk(text: string, apiKey: string): Promise<string> {
         {
           role: "system",
           content:
-            "You are a highly efficient summarizer. Your goal is to provide extremely concise summaries that scale with input length while preserving the original author's voice and tone when possible. For short texts (under 100 words), give a 1-sentence summary. For medium texts (100-500 words), give 2-3 key points. For longer texts, never exceed 4-5 key points. Always prioritize the most impactful information. Be ruthlessly brief - shorter is better."
+            "You are a highly efficient summarizer. Follow this exact format:\n\n" +
+            "1. For texts over 500 words:\n" +
+            "- First provide a bullet-point list of key points prefixed with 'KEY POINTS:'\n" +
+            "- Then provide a final 3-4 sentence summary wrapped in <summary></summary> tags\n\n" +
+            "2. For texts between 100-500 words:\n" +
+            "- Provide 2-3 key points wrapped in <summary></summary> tags\n\n" +
+            "3. For texts under 100 words:\n" +
+            "- Provide a single sentence summary wrapped in <summary></summary> tags\n\n" +
+            "Always prioritize the most impactful, actionable or interesting information. Preserve the original author's voice and tone."
         },
         {
           role: "user",
-          content: `Summarize this text as concisely as possible, scaling summary length to input length: \n\n${text}`
+          content: `Analyze and summarize this text following the specified format:\n\n${text}`
         }
       ],
-      temperature: 0.5,
+      temperature: 0.3, // Reduced temperature for more consistent formatting
       max_tokens: 250
     })
   })
@@ -84,7 +92,14 @@ async function processChunk(text: string, apiKey: string): Promise<string> {
     throw new Error("Invalid API response format")
   }
 
-  return data.choices[0].message.content
+  // Extract just the summary section
+  const content = data.choices[0].message.content
+  const summaryMatch = content.match(/<summary>(.*?)<\/summary>/s)
+  if (!summaryMatch) {
+    throw new Error("Response did not contain a properly formatted summary")
+  }
+
+  return summaryMatch[1].trim()
 }
 
 // Add this helper function at the top of the file
