@@ -62,23 +62,49 @@ async function processChunk(text: string, apiKey: string): Promise<string> {
         {
           role: "system",
           content:
-            "You are a highly efficient summarizer. Follow this exact format:\n\n" +
-            "1. For texts over 500 words:\n" +
-            "- First provide a bullet-point list of key points prefixed with 'KEY POINTS:'\n" +
-            "- Then provide a final 3-4 sentence summary wrapped in <summary></summary> tags\n\n" +
-            "2. For texts between 100-500 words:\n" +
-            "- Provide 2-3 key points wrapped in <summary></summary> tags\n\n" +
-            "3. For texts under 100 words:\n" +
-            "- Provide a single sentence summary wrapped in <summary></summary> tags\n\n" +
-            "Always prioritize the most impactful, actionable or interesting information. Preserve the original author's voice and tone."
+            "You are an expert summarizer with years of experience in content analysis and technical writing. " +
+            "Your summaries are known for being clear, concise, and capturing the essence of the text while maintaining accuracy.\n\n" +
+            "OUTPUT RULES:\n" +
+            "1. For texts > 500 words:\n" +
+            "```\n" +
+            "KEY POINTS:\n" +
+            "• [key point 1]\n" +
+            "• [key point 2]\n" +
+            "...\n" +
+            "<summary>[3-4 sentence summary here]</summary>\n" +
+            "```\n\n" +
+            "2. For texts 100-500 words:\n" +
+            "```\n" +
+            "<summary>\n" +
+            "• [key point 1]\n" +
+            "• [key point 2]\n" +
+            "</summary>\n" +
+            "```\n\n" +
+            "3. For texts < 100 words:\n" +
+            "```\n" +
+            "<summary>[single sentence summary]</summary>\n" +
+            "```\n\n" +
+            "GUIDELINES:\n" +
+            "- Focus on actionable insights and key takeaways\n" +
+            "- Maintain original tone (formal/casual/technical)\n" +
+            "- Preserve important technical details and numbers\n" +
+            "- Use original terminology when domain-specific\n" +
+            "- Exclude redundant or obvious information\n" +
+            "- Never add information not present in original text"
         },
         {
           role: "user",
-          content: `Analyze and summarize this text following the specified format:\n\n${text}`
+          content:
+            "Here's the text to analyze. Word count: " +
+            text.split(/\s+/).length +
+            "\n\n" +
+            text
         }
       ],
-      temperature: 0.3, // Reduced temperature for more consistent formatting
-      max_tokens: 250
+      temperature: 0.2,
+      max_tokens: 350,
+      presence_penalty: -0.2, // Slight penalty to prevent adding information
+      frequency_penalty: 0.3
     })
   })
 
