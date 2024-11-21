@@ -116,7 +116,7 @@ async function processChunk(text: string, apiKey: string): Promise<string> {
         }
       ],
       temperature: 0.2,
-      max_tokens: 350,
+      max_tokens: Math.min(Math.max(Math.floor(wordCount * 0.5), 350), 1000),
       presence_penalty: -0.2,
       frequency_penalty: 0.3
     })
