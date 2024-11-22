@@ -48,8 +48,61 @@ async function extractKeyPoints(text: string, apiKey: string): Promise<string> {
   }
 }
 
+// Helper function to get system prompt based on word count
+function getSystemPrompt(wordCount: number): string {
+  let systemPrompt = ""
+  if (wordCount > 500) {
+    systemPrompt =
+      "You are an expert summarizer specializing in long-form content analysis. " +
+      "Create a comprehensive yet concise summary with key points and a 3-4 sentence overview.\n\n" +
+      "OUTPUT FORMAT:\n" +
+      "```\n" +
+      "KEY POINTS:\n" +
+      "• [key point 1]\n" +
+      "• [key point 2]\n" +
+      "...\n" +
+      "<summary>[3-4 sentence summary here]</summary>\n" +
+      "```"
+  } else if (wordCount >= 100) {
+    systemPrompt =
+      "You are an expert summarizer specializing in medium-length content. " +
+      "Extract the main points while maintaining the original tone and terminology.\n\n" +
+      "OUTPUT FORMAT:\n" +
+      "```\n" +
+      "<summary>\n" +
+      "• [key point 1]\n" +
+      "• [key point 2]\n" +
+      "</summary>\n" +
+      "```"
+  } else {
+    systemPrompt =
+      "You are an expert summarizer specializing in concise content. " +
+      "Distill the essence into a single clear sentence.\n\n" +
+      "OUTPUT FORMAT:\n" +
+      "```\n" +
+      "<summary>[single sentence summary]</summary>\n" +
+      "```"
+  }
+
+  // Add common guidelines to all prompts
+  systemPrompt +=
+    "\n\nGUIDELINES:\n" +
+    "- Focus on actionable insights and key takeaways\n" +
+    "- Maintain original tone (formal/casual/technical)\n" +
+    "- Preserve important technical details and numbers\n" +
+    "- Use original terminology when domain-specific\n" +
+    "- Exclude redundant or obvious information\n" +
+    "- Never add information not present in original text"
+
+  return systemPrompt
+}
+
 // Helper function to process individual chunks
 async function processChunk(text: string, apiKey: string): Promise<string> {
+  const wordCount = text.split(/\s+/).length
+
+  const systemPrompt = getSystemPrompt(wordCount)
+
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -61,16 +114,17 @@ async function processChunk(text: string, apiKey: string): Promise<string> {
       messages: [
         {
           role: "system",
-          content:
-            "You are a highly efficient summarizer. Your goal is to provide extremely concise summaries that scale with input length while preserving the original author's voice and tone when possible. For short texts (under 100 words), give a 1-sentence summary. For medium texts (100-500 words), give 2-3 key points. For longer texts, never exceed 4-5 key points. Always prioritize the most impactful information. Be ruthlessly brief - shorter is better."
+          content: systemPrompt
         },
         {
           role: "user",
-          content: `Summarize this text as concisely as possible, scaling summary length to input length: \n\n${text}`
+          content: "Here's the text to analyze:\n\n" + text
         }
       ],
-      temperature: 0.5,
-      max_tokens: 250
+      temperature: 0.2,
+      max_tokens: Math.min(Math.max(Math.floor(wordCount * 0.5), 350), 1000),
+      presence_penalty: -0.2,
+      frequency_penalty: 0.3
     })
   })
 
@@ -84,7 +138,14 @@ async function processChunk(text: string, apiKey: string): Promise<string> {
     throw new Error("Invalid API response format")
   }
 
-  return data.choices[0].message.content
+  // Extract just the summary section
+  const content = data.choices[0].message.content
+  const summaryMatch = content.match(/<summary>(.*?)<\/summary>/s)
+  if (!summaryMatch) {
+    throw new Error("Response did not contain a properly formatted summary")
+  }
+
+  return summaryMatch[1].trim()
 }
 
 // Add this helper function at the top of the file
