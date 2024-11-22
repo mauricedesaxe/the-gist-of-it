@@ -5,6 +5,13 @@ export async function extractKeyPoints(
   text: string,
   apiKey: string
 ): Promise<string> {
+  if (!text?.trim()) {
+    throw new Error("Empty or invalid input text")
+  }
+  if (!apiKey?.trim()) {
+    throw new Error("Invalid API key")
+  }
+
   // Split text if too big
   const MAX_WORDS = 12_000
   const words = text.split(/\s+/)
