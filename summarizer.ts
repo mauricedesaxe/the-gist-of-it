@@ -34,11 +34,11 @@ export async function extractKeyPoints(
   }
 }
 
-const MAX_CHUNK_SIZE = 12000 // Conservative limit for GPT-4's context window
-const OVERLAP_SIZE = 500 // Words to overlap between chunks for context continuity
-
 // Helper function to split text into chunks
 function splitIntoChunks(text: string): string[] {
+  const MAX_CHUNK_SIZE = 12000 // Conservative limit for GPT-4's context window
+  const OVERLAP_SIZE = 500 // Words to overlap between chunks for context continuity
+
   const words = text.split(/\s+/)
   const chunks: string[] = []
 
