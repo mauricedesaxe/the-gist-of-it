@@ -1,3 +1,5 @@
+import OpenAI from "openai"
+
 // Function to extract key points from text using OpenAI's API
 export async function extractKeyPoints(
   text: string,
@@ -53,46 +55,34 @@ function splitIntoChunks(text: string): string[] {
 // Helper function to process individual chunks
 async function processChunk(text: string, apiKey: string): Promise<string> {
   const wordCount = text.split(/\s+/).length
-
   const systemPrompt = getSystemPrompt(wordCount)
 
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`
-    },
-    body: JSON.stringify({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content: systemPrompt
-        },
-        {
-          role: "user",
-          content: "Here's the text to analyze:\n\n" + text
-        }
-      ],
-      temperature: 0.2,
-      max_tokens: Math.min(Math.max(Math.floor(wordCount * 0.5), 350), 1000),
-      presence_penalty: -0.2,
-      frequency_penalty: 0.3
-    })
+  const openai = new OpenAI({ apiKey })
+
+  const completion = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages: [
+      {
+        role: "system",
+        content: systemPrompt
+      },
+      {
+        role: "user",
+        content: "Here's the text to analyze:\n\n" + text
+      }
+    ],
+    temperature: 0.2,
+    max_tokens: Math.min(Math.max(Math.floor(wordCount * 0.5), 350), 1000),
+    presence_penalty: -0.2,
+    frequency_penalty: 0.3
   })
 
-  const data = await response.json()
-
-  if (!response.ok) {
-    throw new Error(data.error?.message || "API request failed")
-  }
-
-  if (!data.choices?.[0]?.message?.content) {
+  const content = completion.choices[0].message.content
+  if (!content) {
     throw new Error("Invalid API response format")
   }
 
   // Extract just the summary section
-  const content = data.choices[0].message.content
   const summaryMatch = content.match(/<summary>(.*?)<\/summary>/s)
   if (!summaryMatch) {
     throw new Error("Response did not contain a properly formatted summary")
